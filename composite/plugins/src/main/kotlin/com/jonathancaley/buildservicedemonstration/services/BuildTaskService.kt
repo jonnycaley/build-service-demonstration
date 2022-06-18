@@ -6,13 +6,12 @@ import org.gradle.tooling.events.FinishEvent
 import org.gradle.tooling.events.OperationCompletionListener
 import org.gradle.tooling.events.task.TaskFailureResult
 import org.gradle.tooling.events.task.TaskFinishEvent
-import java.util.concurrent.atomic.AtomicInteger
 
 abstract class BuildTaskService : BuildService<BuildServiceParameters.None>, OperationCompletionListener {
 
-    val cachedTasksCount = AtomicInteger(0)
-    val upToDateTasksCount = AtomicInteger(0)
-    val executedTasksCount = AtomicInteger(0)
+    var fromCacheTasksCount = 0
+    var upToDateTasksCount = 0
+    var executedTasksCount = 0
 
     var buildPhaseFailureMessage: String? = null
     val buildPhaseFailed: Boolean
@@ -24,13 +23,13 @@ abstract class BuildTaskService : BuildService<BuildServiceParameters.None>, Ope
 
         when {
             event.isFromCache() -> {
-                cachedTasksCount.incrementAndGet()
+                fromCacheTasksCount++
             }
             event.isUpToDate() -> {
-                upToDateTasksCount.incrementAndGet()
+                upToDateTasksCount++
             }
             event.isSuccess() -> {
-                executedTasksCount.incrementAndGet()
+                executedTasksCount++
             }
         }
 
@@ -41,7 +40,9 @@ abstract class BuildTaskService : BuildService<BuildServiceParameters.None>, Ope
 
     /**
      * The following functions are hacky workarounds to obtain a task execution result.
-     * They are what I found to be the most consistent approach of obtaining this information.
+     * They are what I found to be the most consistent approach of obtaining this information (I tried
+     * using similar logic [here](https://github.com/jrodbx/agp-sources/blob/3b6b17156dfcc8717c1bf217743cea8d15e034d2/7.1.3/com.android.tools.build/gradle/com/android/build/gradle/internal/profile/AnalyticsResourceManager.kt#L158).
+     * but failed as explained [here](https://github.com/gradle/gradle/issues/5252).
      * As of this date and on gradle 7.4.2 they work. If task results are ever to change in the future,
      * these will need to be updated.
      */

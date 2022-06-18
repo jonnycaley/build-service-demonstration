@@ -10,10 +10,10 @@ import org.gradle.internal.operations.OperationIdentifier
 import org.gradle.internal.operations.OperationProgressEvent
 import org.gradle.internal.operations.OperationStartEvent
 
-abstract class BuildDurationService : BuildService<BuildServiceParameters.None>, BuildOperationListener, AutoCloseable {
+abstract class BuildDurationService : BuildService<BuildServiceParameters.None>, BuildOperationListener {
 
-    private var buildStartTime: Long? = null
     var buildDuration: Long? = null
+
     var configurationDuration: Long? = null
     var configurationPhaseFailed = true
 
@@ -24,23 +24,17 @@ abstract class BuildDurationService : BuildService<BuildServiceParameters.None>,
     override fun finished(buildOperationDescriptor: BuildOperationDescriptor, operationFinishEvent: OperationFinishEvent) {
         if (buildOperationDescriptor.details is RunRootBuildWorkBuildOperationType.Details) {
             /**
-             * Runs when configuration phase has finished
+             * Runs when build phase finishes, therefore we can assume configuration phase passed
              */
             configurationPhaseFailed = false
 
             val details: RunRootBuildWorkBuildOperationType.Details? = buildOperationDescriptor.details as RunRootBuildWorkBuildOperationType.Details?
-            buildStartTime = details?.buildStartTime
-
             details?.buildStartTime?.let { buildStartTime ->
+                buildDuration = System.currentTimeMillis() - buildStartTime
+
                 val firstTaskStartTime = operationFinishEvent.startTime
                 this.configurationDuration = firstTaskStartTime - buildStartTime
             }
-        }
-    }
-
-    override fun close() {
-        buildStartTime?.let {
-            buildDuration = System.currentTimeMillis() - it
         }
     }
 }

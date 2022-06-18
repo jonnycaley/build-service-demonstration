@@ -8,15 +8,12 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import org.gradle.execution.RunRootBuildWorkBuildOperationType
 import org.gradle.internal.operations.BuildOperationDescriptor
 import org.gradle.internal.operations.BuildOperationListener
 import org.gradle.internal.operations.OperationFinishEvent
 import org.gradle.internal.operations.OperationIdentifier
 import org.gradle.internal.operations.OperationProgressEvent
 import org.gradle.internal.operations.OperationStartEvent
-import org.gradle.tooling.events.FinishEvent
-import org.gradle.tooling.events.OperationCompletionListener
 
 abstract class BuildReporterService : BuildService<BuildReporterService.Params>, BuildOperationListener, AutoCloseable {
 
@@ -29,7 +26,7 @@ abstract class BuildReporterService : BuildService<BuildReporterService.Params>,
          * For example, the project name is defined in settings.gradle and
          * changing it will require the configuration cache to be invalidated
          * so we are safe to parse it as a parameter as we know it won't change
-         * during cached runs..
+         * during cached runs.
          */
         fun getBuildTaskNames(): Property<String>
         fun getGradleVersion(): Property<String>
@@ -99,9 +96,9 @@ abstract class BuildReporterService : BuildService<BuildReporterService.Params>,
 
     private fun getTasksExecutionStatistics(buildTaskService: BuildTaskService): TaskExecutionStatistics {
         return TaskExecutionStatistics(
-            buildTaskService.executedTasksCount.get(),
-            buildTaskService.cachedTasksCount.get(),
-            buildTaskService.upToDateTasksCount.get()
+            buildTaskService.executedTasksCount,
+            buildTaskService.fromCacheTasksCount,
+            buildTaskService.upToDateTasksCount
         )
     }
 }

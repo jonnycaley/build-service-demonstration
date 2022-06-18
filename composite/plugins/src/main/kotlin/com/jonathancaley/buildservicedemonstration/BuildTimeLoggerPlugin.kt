@@ -54,7 +54,7 @@ class BuildTimeLoggerPlugin : Plugin<Project> {
             service.parameters.getBuildTaskServiceProvider().set(buildTaskService)
         }
 
-        registry.onOperationCompletion(buildReporterService) // ensures BuildReporterService#onClose is called at the end of the build
+        registry.onOperationCompletion(buildReporterService) // gives gradle a reason to instantiate the build service and call onClose at the end of the build
 
         return buildReporterService
     }
